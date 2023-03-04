@@ -26,6 +26,14 @@ const showSize = () => {
 
   bytesAmount = size
   updateStatus(size)
+
+  const interval = setInterval(() => {
+    console.count()
+    const result = bytesAmount - 100
+    bytesAmount = result < 0 ? 0 : result
+    updateStatus(bytesAmount)
+    if(bytesAmount === 0) clearInterval(interval)
+  }, 50)
   
 }
 
