@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="./app.js"></script>
+</head>
+<body>
+  <div>
+    <div>
+      <h3>Uploading files using Busboy</h3>
+      <form method="POST" id="form" enctype="multipart/form-data">
+        <div>
+          <label for="field">Files</label>
+          <input
+            type="file"
+            id="file"
+            name="file"
+            onchange="showSize()"
+            multiple>
+            <br />
+            <output id="size"></output>
+            <br />
+            <output id="msg"></output>
+        </div>
+        <div style="margin-top: 10px;">
+          <input type="submit" />
+          <input type="reset" />
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
