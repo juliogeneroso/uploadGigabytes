@@ -6,12 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
   <script src="./app.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.min.js" integrity="sha512-Jq1JnVXlkYQOYQpz31qIV/0l67d97J9I6sbILtfiSYX00Isr2zK7XDRmHW8d2iBTwNZfL7sHkHGT0EzLs90jdw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
   <div>
     <div>
       <h3>Uploading files using Busboy</h3>
-      <form method="POST" id="form" enctype="multipart/form-data">
+      <form method="post" id="form" enctype="multipart/form-data">
         <div>
           <label for="field">Files</label>
           <input

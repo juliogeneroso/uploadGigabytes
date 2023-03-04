@@ -1,4 +1,6 @@
 let bytesAmount = 0;
+const API_URL = "http://localhost:3000"
+const ON_UPLOAD_EVENT = 'file-uploaded'
 
 const formatBytes = (bytes) => {
   const units = ['B','KB','MB','GB','TB']
@@ -37,8 +39,47 @@ const showSize = () => {
   
 }
 
+const updateMessage = (msg) => {
+  const msg = document.getElementById('msg')
+  msg.innerHTML = message
+}
+
+const showMessage = () => {
+  const urlParams = new URLSearchParams(window.location.search)
+
+  const serverMessage = urlParams.get('msg')
+
+  if(!serverMessage) return
+
+  updateMessage(serverMessage)
+}
+
+const configureForm = (targetUrl) => {
+  const form = document.getElementById("form")
+  form.action = targetUrl
+}
+
 const onload = () => {
-  console.log('loaded')
+
+  showMessage() 
+
+  const ioClient = io.connect(API_URL, {
+    withCredentials: false
+  })
+
+  ioClient.on("connect", (msg) => {
+    console.log('Connected!', ioClient.id)
+    const targetUrl = API_URL + `?sockedId=${ioClient.id}`
+    configureForm(targetUrl)
+  })
+
+  ioClient.on(ON_UPLOAD_EVENT, (bytesReceived) => {
+    //console.log('received', bytesReceived)
+    /* bytesAmount = bytesAmount - bytesReceived
+    updateStatus(bytesAmount) */
+  })
+
+  updateStatus(0)
 }
 
 window.onload = onload
