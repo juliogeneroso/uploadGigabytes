@@ -1,35 +1,35 @@
 const http = require('http')
-const Routes = require('./routes')
-const socketIo = require('socket.io')
 
+const socketIo = require('socket.io');
+
+const { logger } = require('./util');
+const Routes = require('./routes');
 const PORT = 3000
 
-const handler = function(request, response) {
-  const defaultRoute = async (request, response) => response.end('Hello!')
+const handler = function (request, response) {
+    const defaultRoute = async(request, response) => response.end('hello!');
 
-  const routes = new Routes(io)
-  const chosen = routes[request.method.toLowerCase()] || defaultRoute
- 
-  return chosen.apply(routes, [request, response])
+    const routes = new Routes(io)
+    const chosen = routes[request.method.toLowerCase()] || defaultRoute
+
+    return chosen.apply(routes, [request, response])
 }
 
-const server = http.createServer(handler)
-const io = socketIo(server, {
-  cors: {
-    origin: "*",
-    credentials: false
-  }
-})
 
-io.on("connection", (socket) => console.log('someone connected', socket.id))
+const socketServer = http.createServer(handler);
+const io = socketIo(socketServer, {
+    cors: {
+        origin: "*",
+        credentials: false,
+    }
+});
 
-const interval = setInterval(() => {
-  io.emit('file-uploaded', 100)
-}, 250)
+io.on('connection', (socket) => logger.info('someone connected!', socket.id));
 
 const startServer = () => {
-  const { address, port } = server.address()
-  console.log(`app running at http://${address}:${port}`)
+    
+    const { address: host, port } = socketServer.address()
+    logger.info(`app running at http://${host}:${port}`)
 }
 
-server.listen(PORT, startServer)
+socketServer.listen(PORT, startServer);

@@ -1,87 +1,96 @@
 let bytesAmount = 0;
 const API_URL = "http://localhost:3000"
-const ON_UPLOAD_EVENT = 'file-uploaded'
+const ON_UPLOAD_EVENT = "file-uploaded"
 
-const formatBytes = (bytes) => {
-  const units = ['B','KB','MB','GB','TB']
 
-  let i = 0
 
-  for(i; bytes >=1024 && i < 4; i++) {
-    bytes /= 1024
-  }
+function formatBytes(bytes, decimals = 2) {
+    if (bytes === 0) return "0 Bytes";
 
-  return `${bytes.toFixed(2)} ${units[i]}`
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return (
+        parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i]
+    );
 }
 
-const updateStatus = (size) => {
-  const text = `Pending Bytes to Upload: <strong>${formatBytes(size)}</strong>`
-  document.getElementById("size").innerHTML = text
+function updateStatus(size) {
+    const text = `Pending Bytes to upload: <strong>${formatBytes(size)}</strong>`;
+    document.getElementById("size").innerHTML = text;
 }
 
-const showSize = () => {
-  const { files: fileElements } = document.getElementById('file')
-  if(!fileElements.length) return;
+function showSize() {
+    const { files: fileElements } = document.getElementById("file");
+    if (!fileElements.length) return;
 
-  const files = Array.from(fileElements)
-  const { size } = files.reduce((prev, next) => ({size: prev.size + next.size}), { size: 0 })
+    const files = Array.from(fileElements)
 
-  bytesAmount = size
-  updateStatus(size)
+    const { size } = files
+        .reduce((prev, next) => ({ size: prev.size + next.size }), { size: 0 });
 
-  const interval = setInterval(() => {
-    console.count()
-    const result = bytesAmount - 100
-    bytesAmount = result < 0 ? 0 : result
-    updateStatus(bytesAmount)
-    if(bytesAmount === 0) clearInterval(interval)
-  }, 50)
-  
-}
 
-const updateMessage = (msg) => {
-  const msg = document.getElementById('msg')
-  msg.innerHTML = message
-}
+    bytesAmount = size
+    updateStatus(size);
 
-const showMessage = () => {
-  const urlParams = new URLSearchParams(window.location.search)
+    // const interval = setInterval(() => {
+    //     console.count() 
+    //     const result = bytesAmount - 5e6;
+    //     bytesAmount = result < 0 ? 0 : result 
+    //     updateStatus(bytesAmount);
+    //     if(bytesAmount === 0) clearInterval(interval)
+    // }, 50);
+};
 
-  const serverMessage = urlParams.get('msg')
-
-  if(!serverMessage) return
-
-  updateMessage(serverMessage)
-}
 
 const configureForm = (targetUrl) => {
-  const form = document.getElementById("form")
-  form.action = targetUrl
+    const form = document.getElementById('form')
+    form.action = targetUrl
+    form.addEventListener('reset', () => updateStatus(0))
+}
+
+const updateMessage = (message) => {
+    const msg = document.getElementById('msg')
+    msg.innerText = message
+
+   // msg.classList.add('alert', 'alert-primary')
+
+    setTimeout(() => {
+        msg.hidden = true
+    }, 3000);
+}
+
+const showMessages = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const serverMessage = urlParams.get('msg')
+    if (!serverMessage) return;
+
+    updateMessage(serverMessage)
+
 }
 
 const onload = () => {
+    showMessages()
 
-  showMessage() 
+    const ioClient = io.connect(API_URL, { withCredentials: false });
+    ioClient.on("connect", (msg) => {
+        console.log("connected!", ioClient.id)
+        const targetUrl = API_URL + `?socketId=${ioClient.id}`
+        configureForm(targetUrl)
+    });
 
-  const ioClient = io.connect(API_URL, {
-    withCredentials: false
-  })
+    ioClient.on(ON_UPLOAD_EVENT, (bytesReceived) => {
+        // console.log("uploaded!", msg);
+        bytesAmount = bytesAmount - bytesReceived;
+        updateStatus(bytesAmount);
+    });
 
-  ioClient.on("connect", (msg) => {
-    console.log('Connected!', ioClient.id)
-    const targetUrl = API_URL + `?sockedId=${ioClient.id}`
-    configureForm(targetUrl)
-  })
-
-  ioClient.on(ON_UPLOAD_EVENT, (bytesReceived) => {
-    //console.log('received', bytesReceived)
-    /* bytesAmount = bytesAmount - bytesReceived
-    updateStatus(bytesAmount) */
-  })
-
-  updateStatus(0)
+    updateStatus(0)
 }
 
-window.onload = onload
-window.showSize = showSize
 
+window.showSize = showSize;
+window.onload = onload;
